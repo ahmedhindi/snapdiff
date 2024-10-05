@@ -1,0 +1,8 @@
+1 - add dicorator to funtion.
+2 - the decorator should know the input and output and pickles it. 
+3 - the decorator should have the option to ignore some inputs if spesified. 
+4 - the decorator should have the option to ignore some outputs if spesified. 
+5 - the decorator should have the option to only pickle part of the output using a callback function that filters the input or output. for example if the input is a dataframe put in the function i only use 2 columns of it.
+
+
+
