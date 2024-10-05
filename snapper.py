@@ -1,12 +1,8 @@
-from functools import wraps
-import yaml
 import os
-import json
-
 from functools import update_wrapper
-import os
 import joblib
-from difflib import Differ
+from deepdiff import DeepDiff
+from snapdiff.utils import compare_args, compare_kwargs
 
 
 class Snapper:
@@ -37,42 +33,8 @@ class Snapper:
             print(f"No snapshot found for {self.func_name}")
             return 0, 0, 0
 
-    def compare_args(self, args, old_args):
-        new_args = set(args)
-        old_args = set(old_args)
-        added_args = new_args - old_args
-        removed_args = old_args - new_args
-        if added_args:
-            print(f"Added positional arguments : {added_args}")
-        if removed_args:
-            print(f"Removed positional arguments: {removed_args}")
-        for arg, old_arg in zip(args, old_args):
-            if arg != old_arg:
-                return False
-        return True
-
-    def compare_kwargs(self, kwargs, old_kwargs):
-        new_kws = set(kwargs.keys())
-        old_kws = set(old_kwargs.keys())
-        added_kws = new_kws - old_kws
-        removed_kws = old_kws - new_kws
-
-        if added_kws:
-            print(f"Added keyword arguments : {added_kws}")
-
-        if removed_kws:
-            print(f"Removed keyword arguments: {removed_kws}")
-
-        for key, value in kwargs.items():
-            if key not in old_kwargs:
-                return False
-            else:
-                if value != old_kwargs[key]:
-                    return False
-        return True
-
     def compare_result(self, result, old_result):
-        return Differ().compare(result, old_result)
+        return DeepDiff(result, old_result)
 
     def __call__(self, *args, **kwargs):
         result = self.func(*args, **kwargs)
@@ -85,12 +47,13 @@ class Snapper:
             self.dump(result, *args, **kwargs)
 
         if self.compare_conds:
-            if not self.compare_args(args, old_args):
+            if not compare_args(args, old_args):
                 print("Arguments have changed")
-            if not self.compare_kwargs(kwargs, old_kwargs):
+            if not compare_kwargs(kwargs, old_kwargs):
                 print("Keyword arguments have changed")
-            if not self.compare_result(result, old_result):
-                print("Result has changed")
+            res_diff = self.compare_result(result, old_result)
+            if res_diff:
+                print("Result has changed", res_diff)
             else:
                 print("Result has not changed")
 
@@ -107,7 +70,6 @@ def snapper(compare_conds=True):
     return decorator
 
 
-# Example usage of the Snapper decorator
 @snapper(compare_conds=True)
 def example_function(a, b):
     c = a + b
@@ -115,4 +77,4 @@ def example_function(a, b):
     return d
 
 
-example_function(1, 2)  # Call the function with arguments
+example_function(1, 2)
