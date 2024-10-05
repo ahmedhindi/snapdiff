@@ -5,4 +5,14 @@
 5 - the decorator should have the option to only pickle part of the output using a callback function that filters the input or output. for example if the input is a dataframe put in the function i only use 2 columns of it.
 
 
+Install Necessary Tools:
+python setup.py sdist bdist_wheel
 
+To build your package, run:
+python setup.py sdist bdist_wheel
+
+To upload your package to PyPI, use twine:
+twine upload dist/*
+
+Test PyPI:
+twine upload --repository testpypi dist/*
