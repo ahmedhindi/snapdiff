@@ -1,0 +1,5 @@
+save_snaps_to: data/snapper/snapshots
+snapshots_to_keep: 5
+verbose: true
+state_file: state.json
+dev_mode_name: dev_mode
