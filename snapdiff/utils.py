@@ -4,6 +4,7 @@ import hashlib
 import yaml
 import os
 import json
+from deepdiff import DeepDiff
 
 
 def get_normalized_code(func):
@@ -36,3 +37,41 @@ def get_state():
         with open(state_file, "w") as f:
             json.dump(state, f)
     return state[dev_mode_name]
+
+
+def compare_args(args, old_args):
+    # new_args = set(args)
+    # old_args = set(old_args)
+    # added_args = new_args - old_args
+    # removed_args = old_args - new_args
+    # if added_args:
+    #     print(f"Added positional arguments : {added_args}")
+    # if removed_args:
+    #     print(f"Removed positional arguments: {removed_args}")
+    # for arg, old_arg in zip(args, old_args):
+    #     if arg != old_arg:
+    #         return False
+    # return True
+    return DeepDiff(args, old_args)
+
+
+def compare_kwargs(kwargs, old_kwargs):
+    # new_kws = set(kwargs.keys())
+    # old_kws = set(old_kwargs.keys())
+    # added_kws = new_kws - old_kws
+    # removed_kws = old_kws - new_kws
+
+    # if added_kws:
+    #     print(f"Added keyword arguments : {added_kws}")
+
+    # if removed_kws:
+    #     print(f"Removed keyword arguments: {removed_kws}")
+
+    # for key, value in kwargs.items():
+    #     if key not in old_kwargs:
+    #         return False
+    #     else:
+    #         if value != old_kwargs[key]:
+    #             return False
+    # return True
+    return DeepDiff(kwargs, old_kwargs)
