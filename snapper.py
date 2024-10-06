@@ -48,7 +48,7 @@ class Snapper:
 
     def load(self):
         if os.path.exists(self.snap_file):
-            self.logger.info(f"Loading snapshot for {self.func_name}")
+            self.logger.info(f"Loading snapshot for {self.snap_file}")
             return joblib.load(self.snap_file)
         else:
             self.logger.warning(f"No snapshot found for {self.func_name}")
@@ -98,7 +98,7 @@ def snapper(compare_conds=True):
 @snapper(compare_conds=True)
 def example_function(a, b):
     c = a + b
-    d = c * 2
+    d = c + 2
     return d
 
 

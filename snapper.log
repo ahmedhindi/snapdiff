@@ -5,3 +5,20 @@
 2024-10-06 01:57:49,326 - SnapperLogger - INFO - __call__ - Arguments have changed.
 2024-10-06 01:57:49,326 - SnapperLogger - INFO - __call__ - Keyword arguments have changed.
 2024-10-06 01:57:49,327 - SnapperLogger - INFO - __call__ - Result has changed: {'values_changed': {'root': {'new_value': 5, 'old_value': 6}}}
+2024-10-06 02:05:28,083 - SnapperLogger - INFO - __call__ - Calling function example_function with args: (1, 2), kwargs: {}
+2024-10-06 02:05:28,083 - SnapperLogger - INFO - load - Loading snapshot for data/snapdiff/snapshots/example_function.pkl
+2024-10-06 02:05:28,083 - SnapperLogger - INFO - __call__ - Result has changed: {'values_changed': {'root': {'new_value': 5, 'old_value': 6}}}
+2024-10-06 02:05:54,785 - SnapperLogger - INFO - __call__ - Calling function example_function with args: (1, 2), kwargs: {}
+2024-10-06 02:05:54,785 - SnapperLogger - INFO - load - Loading snapshot for data/snapdiff/snapshots/example_function.pkl
+2024-10-06 02:05:54,785 - SnapperLogger - INFO - __call__ - Result has changed: {'values_changed': {'root': {'new_value': 5, 'old_value': 6}}}
+2024-10-06 02:06:12,291 - SnapperLogger - INFO - __call__ - Calling function example_function with args: (1, 2), kwargs: {}
+2024-10-06 02:06:12,291 - SnapperLogger - WARNING - load - No snapshot found for example_function
+2024-10-06 02:06:12,291 - SnapperLogger - INFO - __call__ - No snapshot found, nothing to compare.
+2024-10-06 02:06:12,292 - SnapperLogger - INFO - __call__ - Arguments have changed.
+2024-10-06 02:06:12,292 - SnapperLogger - INFO - __call__ - Keyword arguments have changed.
+2024-10-06 02:06:12,292 - SnapperLogger - INFO - __call__ - Result has changed: {'values_changed': {'root': {'new_value': 0, 'old_value': 6}}}
+2024-10-06 02:06:32,024 - SnapperLogger - INFO - __call__ - Calling function example_function with args: (1, 2), kwargs: {}
+2024-10-06 02:06:32,024 - SnapperLogger - INFO - dump - Dumping snapshot for example_function
+2024-10-06 02:06:51,848 - SnapperLogger - INFO - __call__ - Calling function example_function with args: (1, 2), kwargs: {}
+2024-10-06 02:06:51,848 - SnapperLogger - INFO - load - Loading snapshot for data/snapdiff/snapshots/example_function.pkl
+2024-10-06 02:06:51,848 - SnapperLogger - INFO - __call__ - Result has changed: {'values_changed': {'root': {'new_value': 6, 'old_value': 5}}}
