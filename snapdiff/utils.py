@@ -5,6 +5,7 @@ import yaml
 import os
 import json
 from deepdiff import DeepDiff
+import astor
 
 
 def get_normalized_code(func):
@@ -40,38 +41,41 @@ def get_state():
 
 
 def compare_args(args, old_args):
-    # new_args = set(args)
-    # old_args = set(old_args)
-    # added_args = new_args - old_args
-    # removed_args = old_args - new_args
-    # if added_args:
-    #     print(f"Added positional arguments : {added_args}")
-    # if removed_args:
-    #     print(f"Removed positional arguments: {removed_args}")
-    # for arg, old_arg in zip(args, old_args):
-    #     if arg != old_arg:
-    #         return False
-    # return True
     return DeepDiff(args, old_args)
 
 
 def compare_kwargs(kwargs, old_kwargs):
-    # new_kws = set(kwargs.keys())
-    # old_kws = set(old_kwargs.keys())
-    # added_kws = new_kws - old_kws
-    # removed_kws = old_kws - new_kws
-
-    # if added_kws:
-    #     print(f"Added keyword arguments : {added_kws}")
-
-    # if removed_kws:
-    #     print(f"Removed keyword arguments: {removed_kws}")
-
-    # for key, value in kwargs.items():
-    #     if key not in old_kwargs:
-    #         return False
-    #     else:
-    #         if value != old_kwargs[key]:
-    #             return False
-    # return True
     return DeepDiff(kwargs, old_kwargs)
+
+
+def add_decorator_to_functions(file_path, decorator_name, decorator_params=None):
+    # Read the file content
+    with open(file_path, "r") as file:
+        file_content = file.read()
+
+    # Parse the file content into an AST
+    tree = ast.parse(file_content)
+
+    # Build the decorator string with or without parameters
+    if decorator_params:
+        decorator_with_params = f"{decorator_name}({', '.join(decorator_params)})"
+    else:
+        decorator_with_params = f"{decorator_name}"
+
+    # Define the decorator node
+    decorator_node = ast.parse(decorator_with_params).body[0].value
+
+    # Loop through all the nodes in the AST and find function definitions
+    for node in ast.walk(tree):
+        if isinstance(node, ast.FunctionDef):  # Check if it's a function
+            # Add the decorator to the function
+            node.decorator_list.append(decorator_node)
+
+    # Convert the modified AST back to Python code
+    modified_code = astor.to_source(tree)
+
+    # Write the modified code back to the file (or you could return it)
+    with open(file_path, "w") as file:
+        file.write(modified_code)
+
+    print(f"Decorator '{decorator_name}' added to all functions in {file_path}")
