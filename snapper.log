@@ -1,0 +1,7 @@
+2024-10-06 01:57:11,141 - SnapperLogger - INFO - __call__ - Calling function example_function with args: (1, 2), kwargs: {}
+2024-10-06 01:57:11,141 - SnapperLogger - INFO - dump - Dumping snapshot for example_function
+2024-10-06 01:57:49,326 - SnapperLogger - INFO - __call__ - Calling function example_function with args: (1, 2), kwargs: {}
+2024-10-06 01:57:49,326 - SnapperLogger - INFO - load - Loading snapshot for example_function
+2024-10-06 01:57:49,326 - SnapperLogger - INFO - __call__ - Arguments have changed.
+2024-10-06 01:57:49,326 - SnapperLogger - INFO - __call__ - Keyword arguments have changed.
+2024-10-06 01:57:49,327 - SnapperLogger - INFO - __call__ - Result has changed: {'values_changed': {'root': {'new_value': 5, 'old_value': 6}}}

@@ -1,3 +1,0 @@
-save_snaps_to: data/snapper/snapshots
-snapshots_to_keep: 5
-verbose: true
