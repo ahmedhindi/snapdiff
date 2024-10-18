@@ -6,7 +6,6 @@ from snapdiff.utils import compare_args, compare_kwargs
 import logging
 
 
-# Logger configuration function
 def setup_logger(log_to_file=True, log_filename="snapper.log"):
     logger = logging.getLogger("SnapperLogger")
     logger.setLevel(logging.INFO)
@@ -28,10 +27,10 @@ def setup_logger(log_to_file=True, log_filename="snapper.log"):
     return logger
 
 
-# Snapper Class
 class Snapper:
-    def __init__(self, func, compare_conds=True, log_to_file=True):
+    def __init__(self, func, compare_conds=True, log_to_file=True, diff_func=None):
         self.func = func
+        diff_func = diff_func or DeepDiff
         update_wrapper(self, func)
         self.compare_conds = compare_conds
         self.dump_conds = not compare_conds
@@ -52,10 +51,10 @@ class Snapper:
             return joblib.load(self.snap_file)
         else:
             self.logger.warning(f"No snapshot found for {self.func_name}")
-            return 0, 0, 0
+            return None, None, None
 
     def compare_result(self, result, old_result):
-        return DeepDiff(result, old_result)
+        return self.diff_func(result, old_result)
 
     def __call__(self, *args, **kwargs):
         self.logger.info(
@@ -65,7 +64,7 @@ class Snapper:
 
         if self.compare_conds:
             old_result, old_args, old_kwargs = self.load()
-            if old_result == 0 and old_args == 0 and old_kwargs == 0:
+            if old_result is None and old_args is None and old_kwargs is None:
                 self.logger.info("No snapshot found, nothing to compare.")
 
         if self.dump_conds:
@@ -88,7 +87,7 @@ class Snapper:
         return self.func.__repr__()
 
 
-def snapper(compare_conds=True):
+def snapper(compare_conds=True, diff_func=None):
     def decorator(func):
         return Snapper(func, compare_conds)
 
