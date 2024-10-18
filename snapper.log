@@ -1,24 +1,29 @@
-2024-10-06 01:57:11,141 - SnapperLogger - INFO - __call__ - Calling function example_function with args: (1, 2), kwargs: {}
-2024-10-06 01:57:11,141 - SnapperLogger - INFO - dump - Dumping snapshot for example_function
-2024-10-06 01:57:49,326 - SnapperLogger - INFO - __call__ - Calling function example_function with args: (1, 2), kwargs: {}
-2024-10-06 01:57:49,326 - SnapperLogger - INFO - load - Loading snapshot for example_function
-2024-10-06 01:57:49,326 - SnapperLogger - INFO - __call__ - Arguments have changed.
-2024-10-06 01:57:49,326 - SnapperLogger - INFO - __call__ - Keyword arguments have changed.
-2024-10-06 01:57:49,327 - SnapperLogger - INFO - __call__ - Result has changed: {'values_changed': {'root': {'new_value': 5, 'old_value': 6}}}
-2024-10-06 02:05:28,083 - SnapperLogger - INFO - __call__ - Calling function example_function with args: (1, 2), kwargs: {}
-2024-10-06 02:05:28,083 - SnapperLogger - INFO - load - Loading snapshot for data/snapdiff/snapshots/example_function.pkl
-2024-10-06 02:05:28,083 - SnapperLogger - INFO - __call__ - Result has changed: {'values_changed': {'root': {'new_value': 5, 'old_value': 6}}}
-2024-10-06 02:05:54,785 - SnapperLogger - INFO - __call__ - Calling function example_function with args: (1, 2), kwargs: {}
-2024-10-06 02:05:54,785 - SnapperLogger - INFO - load - Loading snapshot for data/snapdiff/snapshots/example_function.pkl
-2024-10-06 02:05:54,785 - SnapperLogger - INFO - __call__ - Result has changed: {'values_changed': {'root': {'new_value': 5, 'old_value': 6}}}
-2024-10-06 02:06:12,291 - SnapperLogger - INFO - __call__ - Calling function example_function with args: (1, 2), kwargs: {}
-2024-10-06 02:06:12,291 - SnapperLogger - WARNING - load - No snapshot found for example_function
-2024-10-06 02:06:12,291 - SnapperLogger - INFO - __call__ - No snapshot found, nothing to compare.
-2024-10-06 02:06:12,292 - SnapperLogger - INFO - __call__ - Arguments have changed.
-2024-10-06 02:06:12,292 - SnapperLogger - INFO - __call__ - Keyword arguments have changed.
-2024-10-06 02:06:12,292 - SnapperLogger - INFO - __call__ - Result has changed: {'values_changed': {'root': {'new_value': 0, 'old_value': 6}}}
-2024-10-06 02:06:32,024 - SnapperLogger - INFO - __call__ - Calling function example_function with args: (1, 2), kwargs: {}
-2024-10-06 02:06:32,024 - SnapperLogger - INFO - dump - Dumping snapshot for example_function
-2024-10-06 02:06:51,848 - SnapperLogger - INFO - __call__ - Calling function example_function with args: (1, 2), kwargs: {}
-2024-10-06 02:06:51,848 - SnapperLogger - INFO - load - Loading snapshot for data/snapdiff/snapshots/example_function.pkl
-2024-10-06 02:06:51,848 - SnapperLogger - INFO - __call__ - Result has changed: {'values_changed': {'root': {'new_value': 6, 'old_value': 5}}}
+2024-10-18 18:49:58,716 - Calling function function with args: (1, 5), kwargs: {}
+2024-10-18 18:49:58,717 - Arguments have changed : {args_diff}
+2024-10-18 18:49:58,717 - Result has changed: {'values_changed': {'root': {'new_value': 4, 'old_value': 6}}}
+2024-10-18 18:50:43,532 - Calling function function with args: (1, 2), kwargs: {}
+2024-10-18 18:50:53,305 - Calling function function with args: (1, 2), kwargs: {}
+2024-10-18 18:50:53,306 - Result has not changed.
+2024-10-18 18:51:00,438 - Calling function function with args: (1, 3), kwargs: {}
+2024-10-18 18:51:00,438 - Arguments have changed : {args_diff}
+2024-10-18 18:51:00,439 - Result has changed: {'values_changed': {'root': {'new_value': 3, 'old_value': 4}}}
+----------------------------------------
+
+2024-10-18 20:04:36,520 - Calling function function with args: (1, 3), kwargs: {}
+2024-10-18 20:04:36,521 - Arguments have changed : {args_diff}
+2024-10-18 20:04:36,521 - Result has changed: {'values_changed': {'root': {'new_value': 3, 'old_value': 4}}}
+2024-10-18 20:04:40,776 - Calling function function with args: (1, 3), kwargs: {}
+2024-10-18 20:04:40,776 - Arguments have changed : {args_diff}
+2024-10-18 20:04:40,776 - Result has changed: {'values_changed': {'root': {'new_value': 3, 'old_value': 4}}}
+2024-10-18 20:14:24,345 - Calling function function with args: (5,), kwargs: {'x': 'old', 'y': 'old'}
+2024-10-18 20:14:34,983 - Calling function function with args: (5,), kwargs: {'x': 'old', 'y': 'old'}
+2024-10-18 20:15:05,369 - Calling function function with args: (5,), kwargs: {'x': 'old', 'y': 'old'}
+2024-10-18 20:15:05,370 - Args has not changed.
+2024-10-18 20:15:05,370 - Kwargs has not changed.
+2024-10-18 20:15:05,371 - Result has changed: {'values_changed': {'root': {'new_value': 'oldold', 'old_value': 'oldold5'}}}
+2024-10-18 20:15:05,371 - Result has not changed.
+2024-10-18 20:15:27,764 - Calling function function with args: (3,), kwargs: {'x': 'new', 'y': 'newy'}
+2024-10-18 20:15:27,765 - Args has changed: {'values_changed': {'root[0]': {'new_value': 5, 'old_value': 3}}}
+2024-10-18 20:15:27,765 - Kwargs has changed: {'values_changed': {"root['x']": {'new_value': 'old', 'old_value': 'new'}, "root['y']": {'new_value': 'old', 'old_value': 'newy'}}}
+2024-10-18 20:15:27,766 - Result has changed: {'values_changed': {'root': {'new_value': 'oldold', 'old_value': 'newnewy3'}}}
+2024-10-18 20:15:27,766 - Result has not changed.

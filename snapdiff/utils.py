@@ -40,10 +40,6 @@ def get_state():
     return state[dev_mode_name]
 
 
-def compare_args(args, old_args):
-    return DeepDiff(args, old_args)
-
-
 def compare_kwargs(kwargs, old_kwargs):
     return DeepDiff(kwargs, old_kwargs)
 
