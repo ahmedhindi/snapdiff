@@ -2,7 +2,6 @@ import os
 from functools import update_wrapper
 import joblib
 from deepdiff import DeepDiff
-from snapdiff.utils import compare_args, compare_kwargs
 import logging
 
 
@@ -10,51 +9,51 @@ def setup_logger(log_to_file=True, log_filename="snapper.log"):
     logger = logging.getLogger("SnapperLogger")
     logger.setLevel(logging.INFO)
 
-    # Create formatter with structured logs
-    formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(funcName)s - %(message)s"
-    )
+    # Prevent adding multiple handlers if they already exist
+    if not logger.hasHandlers():
+        # Create formatter with structured logs
+        formatter = logging.Formatter("%(asctime)s - %(message)s")
 
-    # Create console handler or file handler based on the user's choice
-    if log_to_file:
-        handler = logging.FileHandler(log_filename)
-    else:
-        handler = logging.StreamHandler()
+        # Create console handler or file handler based on the user's choice
+        if log_to_file:
+            handler = logging.FileHandler(log_filename)
+        else:
+            handler = logging.StreamHandler()
 
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
     return logger
 
 
 class Snapper:
     def __init__(self, func, compare_conds=True, log_to_file=True, diff_func=None):
         self.func = func
-        diff_func = diff_func or DeepDiff
+        self.diff_func = diff_func or DeepDiff
         update_wrapper(self, func)
         self.compare_conds = compare_conds
         self.dump_conds = not compare_conds
         self.snap_dir = "data/snapdiff/snapshots"
         self.func_name = self.func.__name__
         self.snap_file = f"{self.snap_dir}/{self.func_name}.pkl"
-
-        # Setup logger
         self.logger = setup_logger(log_to_file)
 
     def dump(self, result, *args, **kwargs):
-        self.logger.info(f"Dumping snapshot for {self.func_name}")
         joblib.dump((result, args, kwargs), self.snap_file)
 
     def load(self):
         if os.path.exists(self.snap_file):
-            self.logger.info(f"Loading snapshot for {self.snap_file}")
             return joblib.load(self.snap_file)
         else:
             self.logger.warning(f"No snapshot found for {self.func_name}")
             return None, None, None
 
-    def compare_result(self, result, old_result):
-        return self.diff_func(result, old_result)
+    def diff_logger(self, diff, type):
+        if diff:
+            self.logger.info(f"{type} has changed: {diff}")
+            return 1
+        else:
+            self.logger.info(f"{type} has not changed.")
+            return 0
 
     def __call__(self, *args, **kwargs):
         self.logger.info(
@@ -71,16 +70,14 @@ class Snapper:
             self.dump(result, *args, **kwargs)
 
         if self.compare_conds:
-            if compare_args(args, old_args):
-                self.logger.info("Arguments have changed.")
-            if compare_kwargs(kwargs, old_kwargs):
-                self.logger.info("Keyword arguments have changed.")
-            res_diff = self.compare_result(result, old_result)
-            if res_diff:
-                self.logger.info(f"Result has changed: {res_diff}")
-            else:
+            args_diff = self.diff_func(args, old_args)
+            args_ = self.diff_logger(args_diff, "Args")
+            kwargs_diff = self.diff_func(kwargs, old_kwargs)
+            kwargs_ = self.diff_logger(kwargs_diff, "Kwargs")
+            res_diff = self.diff_func(result, old_result)
+            res_ = self.diff_logger(res_diff, "Result")
+            if args_ or kwargs_ or res_:
                 self.logger.info("Result has not changed.")
-
         return result
 
     def __repr__(self):
@@ -92,13 +89,3 @@ def snapper(compare_conds=True, diff_func=None):
         return Snapper(func, compare_conds)
 
     return decorator
-
-
-@snapper(compare_conds=True)
-def example_function(a, b):
-    c = a + b
-    d = c + 2
-    return d
-
-
-example_function(1, 2)
