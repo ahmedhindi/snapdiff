@@ -110,3 +110,8 @@ def snapper(compare_conds=True, diff_func=None):
         return Snapper(func, compare_conds)
 
     return decorator
+
+
+def add_two_numbers(a: int, b: int) -> int:
+    """Add two numbers and return the result."""
+    return a + b
