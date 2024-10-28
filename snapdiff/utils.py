@@ -8,20 +8,20 @@ from deepdiff import DeepDiff
 import astor
 
 
-def get_normalized_code(func):
-    # get the source code of the function
-    source_code = inspect.getsource(func)
-    # parse the source code into an Abstract Syntax Tree
-    parsed_code = ast.parse(source_code)
-    # convert the Abstract Syntax Tree back to normalized source code
-    normalized_code = ast.dump(parsed_code, annotate_fields=False)
-    # hash the normalized code
-    code_hash = hashlib.sha256(normalized_code.encode()).hexdigest()
-    return code_hash, normalized_code
+# def get_normalized_code(func):
+#     # get the source code of the function
+#     source_code = inspect.getsource(func)
+#     # parse the source code into an Abstract Syntax Tree
+#     parsed_code = ast.parse(source_code)
+#     # convert the Abstract Syntax Tree back to normalized source code
+#     normalized_code = ast.dump(parsed_code, annotate_fields=False)
+#     # hash the normalized code
+#     code_hash = hashlib.sha256(normalized_code.encode()).hexdigest()
+#     return code_hash, normalized_code
 
 
 def load_snapper_config():
-    with open("snapper_config.yaml", "r") as f:
+    with open("snapdiff_config.yaml", "r") as f:
         config = yaml.safe_load(f)
     return config
 
@@ -75,3 +75,49 @@ def add_decorator_to_functions(file_path, decorator_name, decorator_params=None)
         file.write(modified_code)
 
     print(f"Decorator '{decorator_name}' added to all functions in {file_path}")
+
+
+class NormalizeNames(ast.NodeTransformer):
+    def __init__(self):
+        self.func_name_counter = 0
+        self.var_name_counter = 0
+        self.func_name_map = {}
+        self.var_name_map = {}
+
+    def visit_FunctionDef(self, node):
+        # Assign a generic name to function names
+        if node.name not in self.func_name_map:
+            self.func_name_map[node.name] = f"func_{self.func_name_counter}"
+            self.func_name_counter += 1
+        node.name = self.func_name_map[node.name]
+        # Continue transforming function arguments and body
+        self.generic_visit(node)
+        return node
+
+    def visit_Name(self, node):
+        # Assign generic names to variable names used in the function
+        if isinstance(node.ctx, ast.Store) or isinstance(node.ctx, ast.Load):
+            if node.id not in self.var_name_map:
+                self.var_name_map[node.id] = f"var_{self.var_name_counter}"
+                self.var_name_counter += 1
+            node.id = self.var_name_map[node.id]
+        return node
+
+
+def get_normalized_code(func):
+    # Get the source code of the function
+    source_code = inspect.getsource(func)
+    # Parse the source code into an Abstract Syntax Tree
+    parsed_code = ast.parse(source_code)
+    # Normalize function and variable names
+    normalizer = NormalizeNames()
+    normalized_tree = normalizer.visit(parsed_code)
+    # Convert the normalized AST back to source code (as a string) for hashing
+    normalized_code = ast.dump(normalized_tree, annotate_fields=False)
+    # Hash the normalized code
+    code_hash = hashlib.sha256(normalized_code.encode()).hexdigest()
+    return code_hash, normalized_code
+
+
+def get_path(func):
+    return os.path.relpath(inspect.getfile(func), start=os.getcwd())

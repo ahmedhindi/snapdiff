@@ -1,3 +1,2 @@
-[files]
-save_snaps_to: data/snapdiff/snapshots
+snap_dir: data/snapdiff/snapshots
 log_file: data/snapdiff/logs/snapdiff.log

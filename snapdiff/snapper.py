@@ -4,8 +4,14 @@ import joblib
 from deepdiff import DeepDiff, Delta
 import logging
 from typing import Dict, Any
-from utils import load_snapper_config
+from .utils import load_snapper_config, get_normalized_code
 from pathlib import Path
+
+
+def deltadiff(a, b):
+    diff = DeepDiff(a, b)
+    delta = Delta(diff)
+    return delta.to_dict()
 
 
 def setup_logger(log_to_file: bool = True, log_filename: str = "snapper.log"):
@@ -32,40 +38,42 @@ class Snapper:
         mode: str = "diff",  # diff or snap
         log_to_file: bool = True,
         diff_func: callable = None,
-        diff_type: str = "delta",
+        ignore_unchanged_funcs: bool = False,
     ):
         if mode not in {"diff", "snap"}:
             raise ValueError("Invalid mode. Choose between 'snap' or 'diff'.")
+        self.mode = mode
         self.func = func
+        self._func_metadata()
         update_wrapper(self, func)
-        self.diff_func = self._set_diff_function()
+        self._set_diff_function(diff_func)
         self.func_name = self.func.__name__
-        self.snap_file = f"{self.snap_dir}/{self.func_name}.pkl"
+        self._set_snap_path()
         self.logger = setup_logger(log_to_file)
         os.makedirs(self.snap_dir, exist_ok=True)
+        self.ignore_unchanged_funcs = ignore_unchanged_funcs
 
     def _set_snap_path(self):
         self.snap_dir = Path(load_snapper_config()["snap_dir"])
-        self.snap_file = self.snap_dir / Path(f"{self.func_name}.pkl")
+        self.snap_file = self.snap_dir / Path(
+            f"{ self.function_hash +'__'+ self.func_name}.pkl"
+        )
 
-    def _set_diff_function(self):
-        if self.diff_func is None:
-            print("using custom diff_func for delta")
-            self.diff_func = self.mode
-        elif self.diff_type == "delta":
-            self.diff_func = Delta
-        elif self.diff_type == "diff":
-            self.diff_func = DeepDiff
+    def _set_diff_function(self, diff_func):
+        if diff_func:
+            self.diff_func = diff_func
+        else:
+            self.diff_func = deltadiff
 
-    def dump(self, result, *args, **kwargs) -> None:
-        joblib.dump((result, args, kwargs), self.snap_file)
+    def dump(self, function_hash, result, *args, **kwargs) -> None:
+        joblib.dump((function_hash, result, args, kwargs), self.snap_file)
 
     def load(self) -> Any:
         if os.path.exists(self.snap_file):
             return joblib.load(self.snap_file)
         else:
             self.logger.warning(f"No snapshot found for {self.func_name}")
-            return None, None, None
+            return None, None, None, None
 
     def diff_logger(self, diff: Dict, type: str) -> int:
         if diff:
@@ -75,6 +83,11 @@ class Snapper:
             self.logger.info(f"{type} has not changed.")
             return 0
 
+    def _func_metadata(self):
+        code_hash, normilized_code = get_normalized_code(self.func)
+        self.function_hash = code_hash
+        self.normilized_code = normilized_code
+
     def __call__(self, *args, **kwargs) -> Any:
         self.logger.info(
             f"Calling function {self.func_name} with args: {args}, kwargs: {kwargs}"
@@ -82,12 +95,19 @@ class Snapper:
         result = self.func(*args, **kwargs)
 
         if self.mode == "snap":
-            self.dump(result, *args, **kwargs)
+            self.dump(self.function_hash, result, *args, **kwargs)
 
         elif self.mode == "diff":
-            old_result, old_args, old_kwargs = self.load()
+            old_func_hash, old_result, old_args, old_kwargs = self.load()
             if old_result is None and old_args is None and old_kwargs is None:
                 self.logger.info("No snapshot found, nothing to compare.")
+
+            if self.ignore_unchanged_funcs:
+                if old_func_hash == self.function_hash:
+                    self.logger.info(
+                        f"Function {self.func_name} has not changed any functional changes, comparasion is skipped."
+                    )
+                    return result
 
             args_diff = self.diff_func(args, old_args)
             args_ = self.diff_logger(args_diff, "Args")
@@ -105,13 +125,8 @@ class Snapper:
         return self.func.__repr__()
 
 
-def snapper(compare_conds=True, diff_func=None):
+def snapper(mode=True, diff_func=None):
     def decorator(func):
-        return Snapper(func, compare_conds)
+        return Snapper(func=func, mode=mode, diff_func=diff_func)
 
     return decorator
-
-
-def add_two_numbers(a: int, b: int) -> int:
-    """Add two numbers and return the result."""
-    return a + b
