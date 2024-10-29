@@ -1,22 +1,38 @@
-from snapdiff.utils import (
-    load_snapper_config,
-    get_state,
-    compare_kwargs,
-    add_decorator_to_functions,
-)
+@snapper(mode='snap')
+def adder(a, b):
+    return a + b
 
 
-import inspect
-import os
-
-a = inspect.getfile(get_state)
-
-# ignore the paths before current directory
-
-a = os.path.relpath(a, start=os.getcwd())
-
-print(a)
+@snapper(mode='snap')
+def subtractor(a, b):
+    return a - b
 
 
-def get_path(func):
-    return os.path.relpath(inspect.getfile(func), start=os.getcwd())
+@snappp
+@snapper(mode='snap')
+def multiply(a, b):
+    return a * b
+
+
+class Calculator:
+
+    @snapper(mode='snap')
+    def __init__(self, a, b):
+        self.a = a
+        self.b = b
+
+    @snapper(mode='snap')
+    def add(self):
+        return self.a + self.b
+
+    @snapper(mode='snap')
+    def subtract(self):
+        return self.a - self.b
+
+    @snapper(mode='snap')
+    def multiply(self):
+        return self.a * self.b
+
+    @snapper(mode='snap')
+    def divide(self):
+        return self.a / self.b

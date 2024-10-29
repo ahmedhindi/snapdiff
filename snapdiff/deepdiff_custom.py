@@ -211,3 +211,12 @@ class CompareSklearnPipeline(BaseOperator):
                 diff_instance.custom_report_result("Pipeline_difference", level, diff)
                 return True
         return False
+
+
+df_diff_types = [
+    compareDataFrames(),
+    CompareSeries(),
+    CompareSkModels(),
+    CompareSklearnPipeline(),
+    PathComparisonOperator(),
+]
