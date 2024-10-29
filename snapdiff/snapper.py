@@ -4,7 +4,7 @@ import joblib
 from deepdiff import DeepDiff, Delta
 import logging
 from typing import Dict, Any
-from .utils import load_snapper_config, get_normalized_code
+from .utils import load_snapper_config, get_normalized_code, get_path
 from pathlib import Path
 
 
@@ -37,6 +37,7 @@ class Snapper:
         func: callable,
         mode: str = "diff",  # diff or snap
         log_to_file: bool = True,
+        id: str = None,
         diff_func: callable = None,
         ignore_unchanged_funcs: bool = False,
     ):
@@ -44,6 +45,7 @@ class Snapper:
             raise ValueError("Invalid mode. Choose between 'snap' or 'diff'.")
         self.mode = mode
         self.func = func
+        self.id = id
         self._func_metadata()
         update_wrapper(self, func)
         self._set_diff_function(diff_func)
@@ -55,9 +57,12 @@ class Snapper:
 
     def _set_snap_path(self):
         self.snap_dir = Path(load_snapper_config()["snap_dir"])
-        self.snap_file = self.snap_dir / Path(
-            f"{ self.function_hash +'__'+ self.func_name}.pkl"
-        )
+        if self.id:
+            self.snap_file = self.snap_dir / Path(f"{self.id}.pkl")
+        else:
+            self.snap_file = self.snap_dir / Path(
+                f"{ self.function_hash +'__'+ self.func_name}.pkl"
+            )
 
     def _set_diff_function(self, diff_func):
         if diff_func:
@@ -88,45 +93,62 @@ class Snapper:
         self.function_hash = code_hash
         self.normilized_code = normilized_code
 
+    def compare(self):
+        old_func_hash, old_result, old_args, old_kwargs = self.load()
+        if old_result is None and old_args is None and old_kwargs is None:
+            self.logger.info("No snapshot found, nothing to compare.")
+
+        if self.ignore_unchanged_funcs:
+            if old_func_hash == self.function_hash:
+                self.logger.info(
+                    f"Function {self.func_name} has not changed any functional changes, comparasion is skipped."
+                )
+                return self.result
+
+        args_diff = self.diff_func(self.args, old_args)
+        args_ = self.diff_logger(args_diff, "Args")
+        kwargs_diff = self.diff_func(self.kwargs, old_kwargs)
+        kwargs_ = self.diff_logger(kwargs_diff, "Kwargs")
+        res_diff = self.diff_func(self.result, old_result)
+        res_ = self.diff_logger(res_diff, "Result")
+        if args_ or kwargs_ or res_:
+            self.logger.info("Result has not changed.")
+
     def __call__(self, *args, **kwargs) -> Any:
+        self.new_args = args
+        self.new_kwargs = kwargs
+
         self.logger.info(
             f"Calling function {self.func_name} with args: {args}, kwargs: {kwargs}"
         )
-        result = self.func(*args, **kwargs)
+        self.result = self.func(*args, **kwargs)
 
         if self.mode == "snap":
-            self.dump(self.function_hash, result, *args, **kwargs)
+            self.dump(self.function_hash, self.result, self.new_args, self.new_kwargs)
 
         elif self.mode == "diff":
-            old_func_hash, old_result, old_args, old_kwargs = self.load()
-            if old_result is None and old_args is None and old_kwargs is None:
-                self.logger.info("No snapshot found, nothing to compare.")
-
-            if self.ignore_unchanged_funcs:
-                if old_func_hash == self.function_hash:
-                    self.logger.info(
-                        f"Function {self.func_name} has not changed any functional changes, comparasion is skipped."
-                    )
-                    return result
-
-            args_diff = self.diff_func(args, old_args)
-            args_ = self.diff_logger(args_diff, "Args")
-            kwargs_diff = self.diff_func(kwargs, old_kwargs)
-            kwargs_ = self.diff_logger(kwargs_diff, "Kwargs")
-            res_diff = self.diff_func(result, old_result)
-            res_ = self.diff_logger(res_diff, "Result")
-            if args_ or kwargs_ or res_:
-                self.logger.info("Result has not changed.")
+            self.compare()
         else:
             self.logger.error("Invalid mode. Choose between 'snap' or 'diff'.")
-        return result
+        return self.result
 
     def __repr__(self) -> str:
         return self.func.__repr__()
 
 
-def snapper(mode=True, diff_func=None):
+def snapper(
+    mode="diff",
+    diff_func=None,
+    id=None,
+    ignore_unchanged_funcs=False,
+):
     def decorator(func):
-        return Snapper(func=func, mode=mode, diff_func=diff_func)
+        return Snapper(
+            func=func,
+            mode=mode,
+            diff_func=diff_func,
+            id=id,
+            ignore_unchanged_funcs=ignore_unchanged_funcs,
+        )
 
     return decorator

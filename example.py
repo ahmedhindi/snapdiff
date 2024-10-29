@@ -16,3 +16,7 @@ a = inspect.getfile(get_state)
 a = os.path.relpath(a, start=os.getcwd())
 
 print(a)
+
+
+def get_path(func):
+    return os.path.relpath(inspect.getfile(func), start=os.getcwd())
