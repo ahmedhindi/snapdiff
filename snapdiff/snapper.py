@@ -4,7 +4,7 @@ import joblib
 from deepdiff import DeepDiff, Delta
 import logging
 from typing import Dict, Any
-from .utils import load_snapper_config, get_normalized_code, get_path
+from .utils import load_snapper_config, get_normalized_code
 from pathlib import Path
 
 
@@ -35,28 +35,74 @@ class Snapper:
     def __init__(
         self,
         func: callable,
-        mode: str = "diff",  # diff or snap
+        mode: str,  # diff or snap
         log_to_file: bool = True,
+        snap_dir: str = None,
+        log_file: str = None,
+        subtype: str = "default",
         id: str = None,
         diff_func: callable = None,
         ignore_unchanged_funcs: bool = False,
     ):
+        self.config_file = Path(load_snapper_config())
+        self.snap_dir = Path(snap_dir) if snap_dir else None
+        self.log_file = Path(log_file) if log_file else None
         if mode not in {"diff", "snap"}:
             raise ValueError("Invalid mode. Choose between 'snap' or 'diff'.")
         self.mode = mode
         self.func = func
         self.id = id
-        self._func_metadata()
+        self.ignore_unchanged_funcs = ignore_unchanged_funcs
+        self.set_subtype(subtype)
         update_wrapper(self, func)
+        self._func_metadata()
         self._set_diff_function(diff_func)
         self.func_name = self.func.__name__
         self._set_snap_path()
-        self.logger = setup_logger(log_to_file)
+        self._setup_logger(log_to_file)
+        # Create the snapshot directory and log file if they don't exist
+        self._setup_files(self.snap_dir)
+        self._setup_files(self.log_file)
+
+    def set_subtype(self, subtype):
+        if subtype not in self.config_file.keys():
+            raise ValueError(
+                f"Invalid subtype. {subtype} not found in snapdiff_config.yaml"
+            )
+        self.subtype = subtype
+        force_config = self.config_file.get("force_config", False)
+        if force_config or not hasattr(self, "snap_dir"):
+            self.snap_dir = self.config_file.snap_dir
+        if force_config or not hasattr(self, "log_file"):
+            self.log_file = self.config_file.log_file
+        if force_config or not hasattr(self, "ignore_unchanged_funcs"):
+            self.ignore_unchanged_funcs = self.config_file.ignore_unchanged_funcs
+        if force_config or not hasattr(self, "mode"):
+            self.mode = self.config_file.mode
+        if force_config or not hasattr(self, "log_to_file"):
+            self.log_to_file = self.config_file.log_to_file
+
+    def _setup_folders(self, file: Path):
+        "if the folder that that files in does not exist create it"
+        os.makedirs(file.parent, exist_ok=True)
+
+    def _setup_logger(self, log_to_file):
+        if log_to_file:
+            self.log_file = self.config_file[self.subtype].get("log_file", None)
+            if self.log_file:
+                self.logger = setup_logger(log_to_file=True, log_filename=self.log_file)
+            else:
+                print(
+                    f"No log file specified in snapdiff_config.yaml for this subtype: {self.subtype} using default log file."
+                )
+
+                self.logger = setup_logger(log_to_file=True, log_filename="snapper.log")
+
+    def _setup_files(self):
         os.makedirs(self.snap_dir, exist_ok=True)
-        self.ignore_unchanged_funcs = ignore_unchanged_funcs
 
     def _set_snap_path(self):
-        self.snap_dir = Path(load_snapper_config()["snap_dir"])
+        self.snap_dir = self.config_file["snap_dir"]
         if self.id:
             self.snap_file = self.snap_dir / Path(f"{self.id}.pkl")
         else:

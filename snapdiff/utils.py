@@ -3,28 +3,40 @@ import ast
 import hashlib
 import yaml
 import os
-import json
 from deepdiff import DeepDiff
+from pathlib import Path
+from pydantic import BaseModel
+from typing import Literal
 
 
-def load_snapper_config():
+class SnapperConfig(BaseModel):
+    snap_dir: Path  # Required field, no default
+    log_file: Path  # Required field, no default
+    ignore_unchanged_funcs: bool  # Required field, no default
+    mode: Literal["snap", "diff"]  # Required field, no default
+    log_to_file: bool  # Required field, no default
+    force_config: bool = False  # Optional field, default value provided
+
+
+def load_snapper_config(subtype: str = "default") -> SnapperConfig:
+    # Load the configuration file
     with open("snapdiff_config.yaml", "r") as f:
         config = yaml.safe_load(f)
-    return config
 
+    # Retrieve default and subtype settings
+    default_config = config.get("default", {})
+    subtype_config = config.get(subtype, {})
 
-def get_state():
-    config = load_snapper_config()
-    state_file = config["state_file"]
-    dev_mode_name = config["dev_mode_name"]
-    if os.path.exists(state_file):
-        with open(state_file, "r") as f:
-            state = json.load(f)
-    else:
-        state = {"dev_mode", False}
-        with open(state_file, "w") as f:
-            json.dump(state, f)
-    return state[dev_mode_name]
+    # Merge subtype with defaults (only filling in missing keys)
+    combined_config = {**default_config, **subtype_config}
+
+    # Convert 'snap_dir' and 'log_file' to Path objects if they exist
+    if "snap_dir" in combined_config:
+        combined_config["snap_dir"] = Path(combined_config["snap_dir"])
+    if "log_file" in combined_config:
+        combined_config["log_file"] = Path(combined_config["log_file"])
+
+    return SnapperConfig(**combined_config)
 
 
 def compare_kwargs(kwargs, old_kwargs):
