@@ -3,20 +3,3 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "snapdiff"
-version = "0.1.0"
-description = "A package for comparing snapshots of data and tracking differences when function change"
-readme = "README.md"
-license = {text = "MIT"}
-authors = [
-    { name = "ahmed hendy", email = "ahmedelsyd5@gmail.com" }
-]
-classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent"
-]
-dependencies = [
-    # Dependencies can be directly added here or managed via requirements.txt
-]
-python_requires = ">=3.7"

@@ -1,0 +1,14 @@
+LICENSE
+README.md
+pyproject.toml
+setup.py
+snapdiff/__init__.py
+snapdiff/deepdiff_custom.py
+snapdiff/invoke_utils.py
+snapdiff/snapper.py
+snapdiff/tasks.py
+snapdiff/utils.py
+snapdiff.egg-info/PKG-INFO
+snapdiff.egg-info/SOURCES.txt
+snapdiff.egg-info/dependency_links.txt
+snapdiff.egg-info/top_level.txt

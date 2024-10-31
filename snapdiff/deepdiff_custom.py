@@ -214,8 +214,8 @@ class CompareSklearnPipeline(BaseOperator):
 
 
 df_diff_types = [
-    compareDataFrames(),
-    CompareSeries(),
+    compareDataFrames(shallow_diff=True),
+    CompareSeries(shallow_diff=True),
     CompareSkModels(),
     CompareSklearnPipeline(),
     PathComparisonOperator(),
